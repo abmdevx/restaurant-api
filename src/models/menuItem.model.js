@@ -29,10 +29,11 @@ const menuItemSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    // TODO: Add ingredients array linking to InventoryItem for auto-decrement
-    // ingredients: [{ item: { type: Schema.Types.ObjectId, ref: "InventoryItem" }, quantity: Number }]
   },
   { timestamps: true }
 );
 
 export default model("MenuItem", menuItemSchema);
+
+// TODO: Add ingredients array linking to InventoryItem for auto-decrement
+// ingredients: [{ item: { type: Schema.Types.ObjectId, ref: "InventoryItem" }, quantity: Number }]

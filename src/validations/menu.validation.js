@@ -19,3 +19,20 @@ export const updateMenuItemSchema = z
     isAvailable: z.boolean().optional(),
   })
   .strict();
+
+export const deleteAllMenuItemsSchema = z.object({
+  confirm: z.literal("I_UNDERSTAND_THIS_WILL_DELETE_ALL_MENU_ITEMS", {
+    errorMap: () => ({
+      message: 'You must send "I_UNDERSTAND_THIS_WILL_DELETE_ALL_MENU_ITEMS" to confirm this action.',
+    }),
+  }),
+});
+
+export const deleteMenuItemsByIdsSchema = z.object({
+  ids: z.array(z.string()).min(1, "At least one menu item ID is required."),
+  confirm: z.literal("I_UNDERSTAND_THIS_WILL_DELETE_SELECTED_MENU_ITEMS", {
+    errorMap: () => ({
+      message: 'You must send "I_UNDERSTAND_THIS_WILL_DELETE_SELECTED_MENU_ITEMS" to confirm this action.',
+    }),
+  }),
+});

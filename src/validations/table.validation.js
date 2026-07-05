@@ -17,3 +17,20 @@ export const updateTableStatusSchema = z.object({
     errorMap: () => ({ message: "Invalid table status" }),
   }),
 });
+
+export const deleteAllTablesSchema = z.object({
+  confirm: z.literal("I_UNDERSTAND_THIS_WILL_DELETE_ALL_TABLES", {
+    errorMap: () => ({
+      message: 'You must send "I_UNDERSTAND_THIS_WILL_DELETE_ALL_TABLES" to confirm this action.',
+    }),
+  }),
+});
+
+export const deleteTablesByIdsSchema = z.object({
+  ids: z.array(z.string()).min(1, "At least one table ID is required."),
+  confirm: z.literal("I_UNDERSTAND_THIS_WILL_DELETE_SELECTED_TABLES", {
+    errorMap: () => ({
+      message: 'You must send "I_UNDERSTAND_THIS_WILL_DELETE_SELECTED_TABLES" to confirm this action.',
+    }),
+  }),
+});
