@@ -74,11 +74,16 @@ export const getInventoryItemById = asyncHandler(async (req, res) => {
 
 // ── Update Inventory Item ─────────────────────────────────────────────────────
 export const updateInventoryItem = asyncHandler(async (req, res) => {
-  const { supplier, costPerUnit, lowStockThreshold } = req.body;
+  const { name, category, unit, supplier, costPerUnit, lowStockThreshold } = req.body;
 
+  console.log(req.params.id);
+  
   const inventoryItem = await InventoryItem.findByIdAndUpdate(
     req.params.id,
     {
+      name,
+      category,
+      unit,
       supplier,
       costPerUnit,
       lowStockThreshold,

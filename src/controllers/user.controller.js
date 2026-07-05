@@ -76,6 +76,45 @@ export const loginUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, loggedInUser, "User logged in successfully!"));
 });
 
+// ── Change Password ─────────────────────────────────────────────────────────────
+
+export const changePassword = asyncHandler(async (req, res) => {
+  // TODO: const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+  const { oldPassword, newPassword } = req.body;
+
+  console.log(oldPassword, newPassword);
+  
+  // find user first
+
+  const user = await User.findById(req.user._id);
+
+  if(!user) {
+    throw new ApiError(404, "User not found.");
+  }
+
+  // compare password is the old password is correct
+
+  const isPasswordCorrect = await user.comparePassword(oldPassword);
+
+  if(!isPasswordCorrect) {
+    throw new ApiError(401, "Invalid old password.");
+  }
+
+  // update password
+
+  user.password = newPassword;
+  await user.save();
+
+  return res
+  .status(200)
+  .json(new ApiResponse(
+      200,
+      {},
+      "Password changed successfully!"
+  ))
+});
+
 // ── Logout ────────────────────────────────────────────────────────────────────
 export const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
@@ -187,9 +226,39 @@ export const deleteUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found.");
   }
 
-  await User.findByIdAndDelete(req.params.userId);
+  await User.findByIdAndDelete(user._id);
 
   return res
     .status(200)
     .json(new ApiResponse(200, null, "User deleted successfully!"));
+});
+
+export const deleteCurrentUser = asyncHandler(async (req, res) => {
+  await User.findByIdAndDelete(req.user._id);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Account deleted successfully."));
+});
+
+export const bulkDeleteUsers = asyncHandler(async (req, res) => {
+  const { userIds } = req.body;
+
+  if (!Array.isArray(userIds) || userIds.length === 0) {
+    throw new ApiError(400, "userIds must be a non-empty array.");
+  }
+
+  const result = await User.deleteMany({
+    _id: { $in: userIds },
+  });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        deletedCount: result.deletedCount,
+      },
+      "Users deleted successfully."
+    )
+  );
 });

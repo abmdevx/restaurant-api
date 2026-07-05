@@ -32,6 +32,7 @@ export const restockSchema = z.object({
   quantity: z
     .number({ invalid_type_error: "Quantity must be a number" })
     .positive("Restock quantity must be positive"),
+  reason: z.string().trim().optional(),
 });
 
 export const deductSchema = z.object({
@@ -39,4 +40,24 @@ export const deductSchema = z.object({
     .number({ invalid_type_error: "Quantity must be a number" })
     .positive("Deduction quantity must be positive"),
   reason: z.string().trim().optional(),
+});
+
+export const deleteAllInventorySchema = z.object({
+  confirm: z.literal("I_UNDERSTAND_THIS_WILL_DELETE_ALL_INVENTORY_ITEMS", {
+    errorMap: () => ({
+      message: 'You must send "I_UNDERSTAND_THIS_WILL_DELETE_ALL_INVENTORY_ITEMS" to confirm this action.',
+    }),
+  }),
+});
+
+export const deleteInventoryItemsByIdsSchema = z.object({
+  ids: z
+    .array(z.string())
+    .min(1, "At least one inventory item ID is required."),
+
+  confirm: z.literal("I_UNDERSTAND_THIS_WILL_DELETE_SELECTED_INVENTORY_ITEMS", {
+    errorMap: () => ({
+      message: 'You must send "I_UNDERSTAND_THIS_WILL_DELETE_SELECTED_INVENTORY_ITEMS" to confirm this action.',
+    }),
+  }),
 });
