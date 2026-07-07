@@ -39,11 +39,9 @@ export const createReservation = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Table is already reserved");
   }
 
-  table.status = "confirmed";
-  await table.save();
-
   const handledByUser = await User.findById(handledBy);
 
+  console.log(handledBy);
   if (!handledByUser) {
     throw new ApiError(404, "User not found");
   }
@@ -51,6 +49,9 @@ export const createReservation = asyncHandler(async (req, res) => {
   if (handledByUser.role !== "staff") {
     throw new ApiError(400, "User is not a staff member");
   }
+
+  table.status = "reserved";
+  await table.save();
 
   const reservation = await Reservation.create({
     customerName,

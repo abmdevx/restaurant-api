@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const orderItemSchema = z.object({
-  menuItemId: z.string().min(1, "Menu item ID is required"),
+  menuItem: z.string().min(1, "Menu item ID is required"),
   quantity: z
     .number({ invalid_type_error: "Quantity must be a number" })
     .int()
@@ -16,6 +16,7 @@ export const placeOrderSchema = z.object({
     .array(orderItemSchema)
     .min(1, "Order must contain at least one item"),
   notes: z.string().trim().optional(),
+  servedBy: z.string().optional(),
 });
 
 export const updateOrderStatusSchema = z.object({

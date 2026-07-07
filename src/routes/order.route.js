@@ -21,13 +21,13 @@ import {
 const router = Router();
 
 // All authenticated staff
-router.post("/", verifyJWT, validate(placeOrderSchema), placeOrder);
-router.get("/", verifyJWT, getAllOrders);
-router.get("/table/:tableId", verifyJWT, getOrdersByTable);
-router.get("/:orderId", verifyJWT, getOrderById);
-router.patch("/:orderId/status", verifyJWT, validate(updateOrderStatusSchema), updateOrderStatus);
-router.patch("/:orderId/add-items", verifyJWT, validate(addItemsSchema), addItemsToOrder);
-router.patch("/:orderId/payment", verifyJWT, validate(processPaymentSchema), processPayment);
-router.patch("/:orderId/cancel", verifyJWT, cancelOrder);
+router.post("/create", verifyJWT, validate(placeOrderSchema), placeOrder);
+router.get("/get-all", verifyJWT, getAllOrders);
+router.get("/table-order/:tableId", verifyJWT, getOrdersByTable);
+router.get("/get-order/:orderId", verifyJWT, getOrderById);
+router.patch("/update-status/:orderId", verifyJWT, validate(updateOrderStatusSchema), updateOrderStatus);
+router.patch("/add-items/:orderId", verifyJWT, validate(addItemsSchema), addItemsToOrder);
+router.patch("/process-payment/:orderId", verifyJWT, validate(processPaymentSchema), processPayment);
+router.patch("/cancel/:orderId", verifyJWT, cancelOrder);
 
 export default router;

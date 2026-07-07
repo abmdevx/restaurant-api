@@ -42,8 +42,6 @@ const inventoryItemSchema = new Schema(
       type: String,
       trim: true,
     },
-    // TODO: Add restock history array if needed
-
     history: [
       {
          type: {

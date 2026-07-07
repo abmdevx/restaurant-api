@@ -8,6 +8,14 @@ export const createMenuItemSchema = z.object({
   }),
   price: z.number({ invalid_type_error: "Price must be a number" }).positive("Price must be positive"),
   isAvailable: z.boolean().optional().default(true),
+  ingredients: z.array(
+    z.object({
+      inventoryItem: z.string().min(1, "Inventory item ID is required"),
+      quantity: z
+        .number({ invalid_type_error: "Quantity must be a number" })
+        .positive("Quantity must be greater than 0"),
+    })
+  ),
 });
 
 export const updateMenuItemSchema = z

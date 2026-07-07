@@ -22,9 +22,9 @@ const tableSchema = new Schema(
       default: "available",
     },
     location: {
-      // e.g. "indoor", "outdoor", "rooftop"
       type: String,
-      trim: true,
+      enum: ["indoor", "outdoor", "rooftop"],
+      required: true,
     },
   },
   { timestamps: true }

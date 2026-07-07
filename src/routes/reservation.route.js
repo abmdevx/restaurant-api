@@ -17,11 +17,11 @@ import {
 const router = Router();
 
 // All authenticated staff
-router.post("/", verifyJWT, validate(createReservationSchema), createReservation);
-router.get("/", verifyJWT, getAllReservations);
-router.get("/:reservationId", verifyJWT, getReservationById);
-router.patch("/:reservationId", verifyJWT, validate(updateReservationSchema), updateReservation);
-router.patch("/:reservationId/confirm", verifyJWT, confirmReservation);
-router.patch("/:reservationId/cancel", verifyJWT, cancelReservation);
+router.post("/create", verifyJWT, validate(createReservationSchema), createReservation);
+router.get("/all-reservations", verifyJWT, getAllReservations);
+router.get("/get-reservation/:reservationId", verifyJWT, getReservationById);
+router.patch("/update/:reservationId", verifyJWT, validate(updateReservationSchema), updateReservation);
+router.patch("/confirm/:reservationId", verifyJWT, confirmReservation);
+router.patch("/cancel/:reservationId", verifyJWT, cancelReservation);
 
 export default router;

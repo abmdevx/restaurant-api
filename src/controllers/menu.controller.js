@@ -2,6 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/apiError.js";
 import ApiResponse from "../utils/apiResponse.js";
 import MenuItem from "../models/menuItem.model.js";
+import InventoryItem from "../models/inventoryItem.model.js";
 
 // ── Create Menu Item (admin) ───────────────────────────────────────────────────
 export const createMenuItem = asyncHandler(async (req, res) => {
@@ -10,13 +11,28 @@ export const createMenuItem = asyncHandler(async (req, res) => {
   // 2. Save to DB
   // 3. Return created item.
 
-  const { name, description, category, price } = req.body;
+  const { name, description, category, price, ingredients, isAvailable } = req.body;
+
+  if (ingredients?.length) {
+    for (const ingredient of ingredients) {
+      const exists = await InventoryItem.findById(ingredient.inventoryItem);
+      console.log(ingredient.inventoryItem);
+      if (!exists) {
+        throw new ApiError(
+          404,
+          `Inventory item ${ingredient.inventoryItem} not found`
+        );
+      }
+    }
+  }
 
   const menuItem = await MenuItem.create({
     name,
     description,
     category,
     price,
+    ingredients,
+    isAvailable,
   });
 
   return res

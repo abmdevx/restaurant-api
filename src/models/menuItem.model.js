@@ -4,6 +4,23 @@ import mongoose, { model, Schema } from "mongoose";
   MenuItems represent dishes / drinks on the restaurant menu.
   Each item links to an InventoryItem for stock tracking (optional).
 */
+
+const ingredientSchema = new Schema(
+  {
+    inventoryItem: {
+      type: Schema.Types.ObjectId,
+      ref: "InventoryItem",
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  { _id: false }
+);
+
 const menuItemSchema = new Schema(
   {
     name: {
@@ -29,7 +46,8 @@ const menuItemSchema = new Schema(
       type: Boolean,
       default: true,
     },
-  },
+    ingredients: [ingredientSchema],
+},
   { timestamps: true }
 );
 

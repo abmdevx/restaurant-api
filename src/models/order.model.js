@@ -85,6 +85,18 @@ const orderSchema = new Schema(
 );
 
 // TODO: Pre-save hook – calculate totalAmount from items[] subtotals
-// TODO: Post-save hook – decrement inventory quantities for each item
+// TODO: Post-save hook – decrement inventory quantities for each item --> not optimized approach
+
+orderSchema.pre("save", function (next) {
+
+  if (!this.isModified("items")) return next();
+
+  this.totalAmount = this.items.reduce(
+    (total, item) => total + item.subtotal,
+    0
+  );
+
+  next();
+});
 
 export default model("Order", orderSchema);

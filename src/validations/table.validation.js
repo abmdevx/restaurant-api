@@ -9,7 +9,9 @@ export const createTableSchema = z.object({
     .number({ invalid_type_error: "Capacity must be a number" })
     .int()
     .min(1, "Capacity must be at least 1"),
-  location: z.string().trim().optional(),
+  location: z.enum(["indoor", "outdoor", "rooftop"], {
+    errorMap: () => ({ message: "Invalid table location" }),
+  }),
 });
 
 export const updateTableStatusSchema = z.object({

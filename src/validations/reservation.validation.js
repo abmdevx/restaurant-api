@@ -19,6 +19,7 @@ export const createReservationSchema = z.object({
     .int()
     .min(1, "Party size must be at least 1"),
   notes: z.string().trim().optional(),
+  handledBy: z.string().optional(),
 });
 
 export const updateReservationSchema = z
