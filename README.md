@@ -238,15 +238,6 @@ git push origin feature-name
 
 ---
 
-# 👨‍💻 Author
-
-**Abdullah Butt**
-
-GitHub:
-https://github.com/abdullahbutt09
-
----
-
 # 📄 License
 
 This project is developed for educational and learning purposes. You are free to use, modify, and extend it for personal or academic projects.
