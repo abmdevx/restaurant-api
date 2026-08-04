@@ -83,7 +83,7 @@ src/
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/abdullahbutt09/code-alpha-restaurant-api.git
+git clone https://github.com/abmdevx/restaurant-api.git
 ```
 
 ```bash
