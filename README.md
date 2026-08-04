@@ -87,7 +87,7 @@ git clone https://github.com/abmdevx/restaurant-api.git
 ```
 
 ```bash
-cd code-alpha-restaurant-api
+cd restaurant-api
 ```
 
 ---
