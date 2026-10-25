@@ -121,7 +121,7 @@ export const placeOrder = asyncHandler(async (req, res) => {
       });
     }
 
-    const servedByUser = await User.findById(servedBy).session(session);
+    const servedByUser = await User.findById(servedBy || req.user._id).session(session);
 
     if (!servedByUser) {
       throw new ApiError(404, "Served by user not found.");
@@ -133,7 +133,7 @@ export const placeOrder = asyncHandler(async (req, res) => {
       reservation: reservationId,
       items: orderItems,
       notes,
-      servedBy,
+      servedBy: servedByUser._id,
     });
 
     await order.save({ session });
@@ -177,11 +177,17 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     filter.table = tableId;
   }
 
-  const orders = await Order.find(filter).populate("table", "tableNumber capacity location status").populate("items.menuItem", "name price");
-
-  if (!orders) {
-    throw new ApiError(404, "Orders not found");
+  if (date) {
+    const start = new Date(date);
+    if (Number.isNaN(start.getTime())) {
+      throw new ApiError(400, "Invalid order date");
+    }
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    filter.createdAt = { $gte: start, $lt: end };
   }
+
+  const orders = await Order.find(filter).populate("table", "tableNumber capacity location status").populate("items.menuItem", "name price");
 
   return res
     .status(200)
@@ -192,9 +198,9 @@ export const getAllOrders = asyncHandler(async (req, res) => {
 export const getOrderById = asyncHandler(async (req, res) => {
   // TODO: Return single order with full population
 
-  const order = await Order.findById(req.params.id).populate("table", "tableNumber capacity location status").populate("items.menuItem", "name price");
+  const order = await Order.findById(req.params.orderId).populate("table", "tableNumber capacity location status").populate("items.menuItem", "name price");
 
-  if (order.length === 0) {
+  if (!order) {
     throw new ApiError(404, "Order not found");
   }
 
@@ -208,11 +214,7 @@ export const getOrdersByTable = asyncHandler(async (req, res) => {
   // TODO: Return all orders for a specific table (current session)
   // req.params.id
 
-  const orders = await Order.find({ table: req.params.id }).populate("table", "tableNumber capacity location status").populate("items.menuItem", "name price");
-
-  if (!orders) {
-    throw new ApiError(404, "Orders not found");
-  }
+  const orders = await Order.find({ table: req.params.tableId }).populate("table", "tableNumber capacity location status").populate("items.menuItem", "name price");
 
   return res
     .status(200)
@@ -226,7 +228,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
 
   const {status} = req.body
 
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.orderId);
 
   if (!order) {
     throw new ApiError(404, "Order not found");
@@ -255,7 +257,7 @@ export const addItemsToOrder = asyncHandler(async (req, res) => {
       throw new ApiError(400, "At least one item is required.");
     }
 
-    const order = await Order.findById(req.params.id).session(session);
+    const order = await Order.findById(req.params.orderId).session(session);
 
     if (!order) {
       throw new ApiError(404, "Order not found.");
@@ -361,7 +363,7 @@ export const processPayment = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Payment method is required.");
     }
 
-    const order = await Order.findById(req.params.id).session(session);
+    const order = await Order.findById(req.params.orderId).session(session);
 
     if (!order) {
       throw new ApiError(404, "Order not found.");
@@ -425,7 +427,7 @@ export const cancelOrder = asyncHandler(async (req, res) => {
   try {
     session.startTransaction();
 
-    const order = await Order.findById(req.params.id)
+    const order = await Order.findById(req.params.orderId)
       .populate({
         path: "items.menuItem",
         populate: {

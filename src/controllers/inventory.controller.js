@@ -76,7 +76,10 @@ export const getInventoryItemById = asyncHandler(async (req, res) => {
 export const updateInventoryItem = asyncHandler(async (req, res) => {
   const { name, category, unit, supplier, costPerUnit, lowStockThreshold } = req.body;
 
-  const existingItem = await InventoryItem.findOne({ name });
+  const existingItem = await InventoryItem.findOne({
+    name,
+    _id: { $ne: req.params.id },
+  });
 
   if (existingItem) {
     throw new ApiError(400, "Inventory item with this name already exists");
@@ -164,7 +167,7 @@ export const deductInventory = asyncHandler(async (req, res) => {
         history: {
           type: "deduction",
           quantity,
-          reason,
+          reason: reason || "Manual Deduction",
         },
       },
     },

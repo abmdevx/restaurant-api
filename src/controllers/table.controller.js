@@ -2,6 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/apiError.js";
 import ApiResponse from "../utils/apiResponse.js";
 import Table from "../models/table.model.js";
+import Reservation from "../models/reservation.model.js";
 
 // ── Create Table (admin) ──────────────────────────────────────────────────────
 export const createTable = asyncHandler(async (req, res) => {
@@ -44,7 +45,7 @@ export const getAllTables = asyncHandler(async (req, res) => {
 export const getTableById = asyncHandler(async (req, res) => {
   // TODO: Return single table
 
-  const table = await Table.findById(req.params.id);
+  const table = await Table.findById(req.params.tableId);
 
   if (!table) {
     throw new ApiError(404, "Table not found");
@@ -62,7 +63,7 @@ export const updateTableStatus = asyncHandler(async (req, res) => {
 
   const { status } = req.body;
 
-  const table = await Table.findById(req.params.id);
+  const table = await Table.findById(req.params.tableId);
 
   if (!table) {
     throw new ApiError(404, "Table not found");
@@ -84,9 +85,24 @@ export const checkTableAvailability = asyncHandler(async (req, res) => {
 
   const { date, partySize } = req.query;
 
+  if (!date || Number.isNaN(new Date(date).getTime())) {
+    throw new ApiError(400, "A valid date is required");
+  }
+
+  const requestedPartySize = Number(partySize);
+  if (!Number.isInteger(requestedPartySize) || requestedPartySize < 1) {
+    throw new ApiError(400, "Party size must be a positive integer");
+  }
+
+  const reservedTableIds = await Reservation.find({
+    date: new Date(date),
+    status: { $in: ["pending", "confirmed"] },
+  }).distinct("table");
+
   const tables = await Table.find({
     status: "available",
-    capacity: { $gte: partySize },
+    capacity: { $gte: requestedPartySize },
+    _id: { $nin: reservedTableIds },
   });
 
   return res
@@ -98,7 +114,7 @@ export const checkTableAvailability = asyncHandler(async (req, res) => {
 export const deleteTable = asyncHandler(async (req, res) => {
   // TODO: Remove a table from the system
 
-  const table = await Table.findByIdAndDelete(req.params.id);
+  const table = await Table.findByIdAndDelete(req.params.tableId);
 
   if (!table) {
     throw new ApiError(404, "Table not found");

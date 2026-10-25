@@ -14,7 +14,7 @@ export const createReservation = asyncHandler(async (req, res) => {
   // 4. Create reservation record
   // 5. Return confirmation
 
-  const { customerName, customerPhone, customerEmail, tableId, date, partySize, notes, handledBy } = req.body;
+  const { customerName, customerPhone, customerEmail, tableId, date, partySize, notes } = req.body;
 
   const table = await Table.findById(tableId);
 
@@ -33,21 +33,21 @@ export const createReservation = asyncHandler(async (req, res) => {
   const conflictingReservation = await Reservation.findOne({
     table: tableId,
     date,
+    status: { $in: ["pending", "confirmed"] },
   });
 
   if (conflictingReservation) {
     throw new ApiError(400, "Table is already reserved");
   }
 
-  const handledByUser = await User.findById(handledBy);
+  const handledByUser = await User.findById(req.body.handledBy || req.user._id);
 
-  console.log(handledBy);
   if (!handledByUser) {
     throw new ApiError(404, "User not found");
   }
 
-  if (handledByUser.role !== "staff") {
-    throw new ApiError(400, "User is not a staff member");
+  if (!["staff", "admin"].includes(handledByUser.role)) {
+    throw new ApiError(403, "Only staff members can handle reservations");
   }
 
   table.status = "reserved";
@@ -61,7 +61,7 @@ export const createReservation = asyncHandler(async (req, res) => {
     date,
     partySize,
     notes,
-    handledBy: handledByUser,
+    handledBy: handledByUser._id,
   });
 
   return res
@@ -80,7 +80,13 @@ export const getAllReservations = asyncHandler(async (req, res) => {
   const filter = {};
 
   if (date) {
-    filter.date = date;
+    const start = new Date(date);
+    if (Number.isNaN(start.getTime())) {
+      throw new ApiError(400, "Invalid reservation date");
+    }
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    filter.date = { $gte: start, $lt: end };
   }
 
   if (status) {
@@ -98,7 +104,7 @@ export const getAllReservations = asyncHandler(async (req, res) => {
 export const getReservationById = asyncHandler(async (req, res) => {
   // TODO: Return single reservation populated with table info
 
-  const reservation = await Reservation.findById(req.params.id).populate("table", "tableNumber capacity location status").populate("handledBy", "name role");
+  const reservation = await Reservation.findById(req.params.reservationId).populate("table", "tableNumber capacity location status").populate("handledBy", "name role");
 
   if (!reservation) {
     throw new ApiError(404, "Reservation not found");
@@ -116,18 +122,48 @@ export const updateReservation = asyncHandler(async (req, res) => {
 
   const { customerName, customerPhone, customerEmail, date, partySize, notes } = req.body;
 
-  const reservation = await Reservation.findById(req.params.id);
+  const reservation = await Reservation.findById(req.params.reservationId);
 
   if (!reservation) {
     throw new ApiError(404, "Reservation not found");
   }
 
-  reservation.customerName = customerName;
-  reservation.customerPhone = customerPhone;
-  reservation.customerEmail = customerEmail;
-  reservation.date = date;
-  reservation.partySize = partySize;
-  reservation.notes = notes;
+  Object.assign(
+    reservation,
+    Object.fromEntries(
+      Object.entries({ customerName, customerPhone, customerEmail, date, partySize, notes })
+        .filter(([, value]) => value !== undefined)
+    )
+  );
+
+  const requestedTableId = req.body.tableId || reservation.table;
+  const requestedDate = date ?? reservation.date;
+  const hasBookingChanges =
+    requestedTableId.toString() !== reservation.table.toString() ||
+    new Date(requestedDate).getTime() !== new Date(reservation.date).getTime();
+
+  if (hasBookingChanges) {
+    const table = await Table.findById(requestedTableId);
+    if (!table || (requestedTableId.toString() !== reservation.table.toString() && table.status !== "available") ||
+        table.capacity < (partySize ?? reservation.partySize)) {
+      throw new ApiError(400, "Requested table is not available");
+    }
+    const conflict = await Reservation.findOne({
+      _id: { $ne: reservation._id },
+      table: table._id,
+      date: requestedDate,
+      status: { $in: ["pending", "confirmed"] },
+    });
+    if (conflict) {
+      throw new ApiError(400, "Requested table is already reserved");
+    }
+    if (requestedTableId.toString() !== reservation.table.toString()) {
+      await Table.findByIdAndUpdate(reservation.table, { status: "available" });
+      table.status = "reserved";
+      await table.save();
+    }
+    reservation.table = table._id;
+  }
 
   await reservation.save();
 
@@ -139,7 +175,7 @@ export const updateReservation = asyncHandler(async (req, res) => {
 // ── Confirm Reservation ───────────────────────────────────────────────────────
 export const confirmReservation = asyncHandler(async (req, res) => {
   // TODO: Change status from "pending" → "confirmed"
-  const reservation = await Reservation.findById(req.params.id);
+  const reservation = await Reservation.findById(req.params.reservationId);
 
   if (!reservation) {
     throw new ApiError(404, "Reservation not found");
@@ -157,7 +193,7 @@ export const confirmReservation = asyncHandler(async (req, res) => {
 export const cancelReservation = asyncHandler(async (req, res) => {
   // TODO: Set status to "cancelled"
   // Free up the table (set table status back to "available" if no other bookings)
-  const reservation = await Reservation.findById(req.params.id);
+  const reservation = await Reservation.findById(req.params.reservationId);
 
   if (!reservation) {
     throw new ApiError(404, "Reservation not found");
@@ -165,6 +201,8 @@ export const cancelReservation = asyncHandler(async (req, res) => {
 
   reservation.status = "cancelled";
   await reservation.save();
+
+  await Table.findByIdAndUpdate(reservation.table, { status: "available" });
 
   return res
     .status(200)

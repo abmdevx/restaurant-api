@@ -16,7 +16,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.FRONT_END_ORIGIN,
+    origin: process.env.FRONT_END_ORIGIN || "http://localhost:5173",
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     maxAge: 86400,
@@ -37,8 +37,24 @@ app.use("/api/v1/orders", orderRoute);
 app.use("/api/v1/inventory", inventoryRoute);
 app.use("/api/v1/reports", reportRoute);
 
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+    errors: [],
+  });
+});
+
 // ── Global error handler ─────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
+  if (err.name === "CastError") {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid resource identifier",
+      errors: [],
+    });
+  }
+
   res.status(err.statusCode || 500).json({
     success: false,
     message: err.message || "Internal Server Error",

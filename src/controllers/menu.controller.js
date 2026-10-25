@@ -83,12 +83,12 @@ export const getMenuItemById = asyncHandler(async (req, res) => {
 export const updateMenuItem = asyncHandler(async (req, res) => {
   // TODO: Update price, availability, description etc.
 
-  const { name, description, category, price } = req.body;
+  const { name, description, category, price, isAvailable, ingredients } = req.body;
 
   const menuItem = await MenuItem.findByIdAndUpdate(
     req.params.id,
-    { name, description, category, price },
-    { new: true }
+    { name, description, category, price, isAvailable, ingredients },
+    { new: true, runValidators: true }
   );
 
   if (!menuItem) {
