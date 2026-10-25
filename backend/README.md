@@ -1,243 +1,118 @@
-# 🍽️ Restaurant Management System API
+# Restora backend
 
-A professional RESTful API built with **Node.js**, **Express.js**, and **MongoDB** for managing restaurant operations. The system provides authentication, menu management, table management, reservations, orders, inventory tracking, reporting, and health monitoring.
+The Restora backend is a versioned REST API for restaurant operations. It
+provides authentication, authorization, validation, and CRUD workflows for
+menus, tables, reservations, orders, inventory, and reports.
 
----
+## Stack
 
-## ✨ Features
+- Node.js with native ES modules
+- Express
+- MongoDB with Mongoose
+- JSON Web Tokens
+- HTTP-only authentication cookies
+- Zod request validation
+- Swagger UI support
 
-- 🔐 JWT Authentication & Authorization
-- 👤 User Management
-- 🍔 Menu Management
-- 🪑 Table Management
-- 📅 Reservation System
-- 🛒 Order Management
-- 📦 Inventory Management
-- 📊 Reports API
-- ❤️ Health Check Endpoint
-- ✅ Request Validation using Zod
-- 🚨 Centralized Error Handling
-- 🍪 Cookie Authentication Support
+## Setup
 
----
-
-## 🛠 Tech Stack
-
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- JWT Authentication
-- Zod Validation
-- bcrypt.js
-- Cookie Parser
-- CORS
-
----
-
-## 📁 Project Structure
-
-```
-src/
-│
-├── config/
-│   └── db.js
-│
-├── controllers/
-│   ├── health.controller.js
-│   ├── inventory.controller.js
-│   ├── menu.controller.js
-│   ├── order.controller.js
-│   ├── report.controller.js
-│   ├── reservation.controller.js
-│   ├── table.controller.js
-│   └── user.controller.js
-│
-├── middleware/
-│   ├── admin.middleware.js
-│   ├── auth.middleware.js
-│   └── validate.middleware.js
-│
-├── models/
-│   ├── inventoryItem.model.js
-│   ├── menuItem.model.js
-│   ├── order.model.js
-│   ├── reservation.model.js
-│   ├── table.model.js
-│   └── user.model.js
-│
-├── routes/
-│
-├── utils/
-│
-├── validations/
-│
-├── app.js
-└── server.js
-```
-
----
-
-# 🚀 Getting Started
-
-## 1. Clone the repository
-
-```bash
-git clone https://github.com/abmdevx/restaurant-api.git
-```
-
-```bash
-cd restaurant-api
-```
-
----
-
-## 2. Install dependencies
+From this directory:
 
 ```bash
 npm install
 ```
 
----
-
-## 3. Configure Environment Variables
-
-Create a `.env` file using the provided `.env.example`.
-
-Example:
+Copy `.env.example` to `.env` and replace the placeholder secrets:
 
 ```env
-PORT=5000
-
-MONGODB_URI=your_mongodb_connection_string
-
-JWT_SECRET=your_jwt_secret
-
-JWT_EXPIRES_IN=7d
+PORT=8000
+MONGODB_URI=mongodb://127.0.0.1:27017/restora
+FRONT_END_ORIGIN=http://localhost:5173
+ACCESS_TOKEN_SECRET=replace-with-a-long-random-secret
+ACCESS_TOKEN_EXPIRY=15m
+REFRESH_TOKEN_SECRET=replace-with-a-different-long-random-secret
+REFRESH_TOKEN_EXPIRY=7d
+NODE_ENV=development
 ```
 
----
+`MONGO_URI` is also accepted as a legacy alias for `MONGODB_URI`. Use
+different, long, randomly generated values for the access and refresh token
+secrets. Do not commit `.env` files or real credentials.
 
-## 4. Start Development Server
+Start the API:
 
 ```bash
 npm run dev
 ```
 
-Production
+The server listens on `http://localhost:3000` by default.
 
-```bash
-npm start
+## API base URL and modules
+
+All routes are versioned under `http://localhost:3000/api/v1`:
+
+| Prefix | Description |
+| --- | --- |
+| `/health` | Health status |
+| `/users` | Registration, login, sessions, and users |
+| `/menu` | Menu item management |
+| `/tables` | Tables and availability |
+| `/reservations` | Reservation management |
+| `/orders` | Orders and payment processing |
+| `/inventory` | Stock management |
+| `/reports` | Sales and operational reports |
+
+Example public requests:
+
+```text
+GET  /api/v1/health
+POST /api/v1/users/register
+POST /api/v1/users/login
+POST /api/v1/users/refresh-token
 ```
 
----
+The remaining resources require authentication. Admin-only mutations also
+require the authenticated user to have the `admin` role.
 
-# 📌 API Modules
+## Authentication
 
-| Module | Description |
-|---------|-------------|
-| Authentication | User login & registration |
-| Users | Manage system users |
-| Menu | Create and manage menu items |
-| Tables | Restaurant table management |
-| Reservations | Customer reservations |
-| Orders | Place and manage orders |
-| Inventory | Inventory stock management |
-| Reports | Restaurant analytics and reports |
-| Health | API status check |
+Successful login sets access and refresh tokens as HTTP-only cookies. Clients
+must send requests with credentials enabled. The API also supports the
+standard `Authorization: Bearer <token>` header for access-token requests.
 
----
+Available user session operations include:
 
-# 🔐 Authentication
+- Register
+- Login
+- Refresh access token
+- Get the current user
+- Change password
+- Logout
 
-The API uses **JSON Web Tokens (JWT)** for authentication.
+## Validation and errors
 
-Protected routes require a valid JWT.
+Request bodies are validated with Zod before reaching controllers. Responses
+use a consistent success/error shape, and centralized middleware handles
+validation, authentication, invalid identifiers, and unexpected errors.
 
-Admin-only routes are secured using authorization middleware.
-
----
-
-# ✅ Validation
-
-All incoming requests are validated using **Zod**, ensuring:
-
-- Required fields
-- Correct data types
-- Cleaner API responses
-- Better error handling
-
----
-
-# 📊 Error Handling
-
-The project includes:
-
-- Custom API Error class
-- Async error wrapper
-- Standardized API responses
-- Centralized error handling middleware
-
----
-
-# 📦 Available Scripts
+## Scripts
 
 ```bash
-npm run dev
+npm run dev   # Start with Nodemon
+npm start     # Start the production server
 ```
 
-Runs the server with Nodemon.
+## Structure
 
-```bash
-npm start
+```text
+src/
+├── config/        # Database and API configuration
+├── controllers/   # Request handlers
+├── middleware/    # Authentication, authorization, validation
+├── models/        # Mongoose models
+├── routes/        # Versioned resource routes
+├── utils/         # API errors, responses, async helpers
+├── validations/   # Zod schemas
+├── app.js         # Express app and middleware
+└── server.js      # Database connection and HTTP server
 ```
-
-Runs the production server.
-
----
-
-# 📚 Dependencies
-
-Main packages used:
-
-- Express.js
-- Mongoose
-- JWT
-- bcryptjs
-- Zod
-- Cookie Parser
-- CORS
-- dotenv
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome.
-
-1. Fork the repository
-2. Create a feature branch
-
-```bash
-git checkout -b feature-name
-```
-
-3. Commit your changes
-
-```bash
-git commit -m "Add new feature"
-```
-
-4. Push the branch
-
-```bash
-git push origin feature-name
-```
-
-5. Open a Pull Request
-
----
-
-# 📄 License
-
-This project is developed for educational and learning purposes. You are free to use, modify, and extend it for personal or academic projects.

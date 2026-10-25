@@ -1,16 +1,81 @@
-# React + Vite
+# Restora frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The Restora frontend is a responsive React application for restaurant teams
+and guests. It provides the branded public experience, authentication screens,
+and the protected application shell.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19
+- Vite
+- React Router
+- ESLint
+- Tailwind CSS v4 with responsive layouts and Restora brand tokens
 
-## React Compiler
+## Routes
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Route | Access | Purpose |
+| --- | --- | --- |
+| `/` | Public | Restora landing page |
+| `/login` | Public | Sign in |
+| `/register` | Public | Create an account |
+| `/dashboard` | Private | Authenticated user dashboard |
 
-## Expanding the ESLint configuration
+Private routes redirect unauthenticated users to `/login`. The current user
+session is stored locally for the client shell, while authentication itself is
+performed by the backend with HTTP-only cookies.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Setup
+
+From this directory:
+
+```bash
+npm install
+npm run dev
+```
+
+The Vite development server runs at `http://localhost:5173`.
+
+## Environment
+
+Copy `.env.example` to `.env.local` and adjust it when needed:
+
+```env
+VITE_API_URL=http://localhost:8000/api/v1
+```
+
+`VITE_API_URL` must include the API version prefix. The default value is
+`http://localhost:8000/api/v1`.
+
+## Backend integration
+
+The authentication forms call:
+
+- `POST /users/register`
+- `POST /users/login`
+- `POST /users/logout`
+
+Requests include credentials so the backend can set and clear its HTTP-only
+authentication cookies. Start the backend before testing account flows; setup
+instructions are in [../backend/README.md](../backend/README.md).
+
+## Scripts
+
+```bash
+npm run dev       # Start Vite with hot reload
+npm run lint      # Run ESLint
+npm run build     # Create a production build
+npm run preview   # Preview the production build locally
+```
+
+## Frontend structure
+
+```text
+src/
+├── App.jsx       # Router, auth provider, pages, and shared UI
+├── App.css       # Application and responsive styles
+├── index.css     # Global styles and typography
+└── main.jsx      # React entry point
+public/
+└── restora.png   # Brand logo
+```
