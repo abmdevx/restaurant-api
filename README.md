@@ -50,6 +50,8 @@ Clone the repository and install dependencies in both applications:
 git clone https://github.com/abmdevx/restora.git
 cd restora
 
+npm install
+
 cd backend
 npm install
 
@@ -58,18 +60,16 @@ npm install
 ```
 
 Create the backend environment file described in
-[backend/README.md](./backend/README.md), then start each application in a
-separate terminal:
+[backend/README.md](./backend/README.md), then start both applications from the repository root:
 
 ```bash
-# Terminal 1
-cd backend
-npm run dev
-
-# Terminal 2
-cd frontend
+cd ..
 npm run dev
 ```
+
+The root `dev` script uses `concurrently` to run the backend and frontend
+development servers in the same terminal. You can also start either
+application separately with `npm run dev` from its directory.
 
 The frontend runs at `http://localhost:5173` and the API runs at
 `http://localhost:8000` by default. The frontend expects the API under
