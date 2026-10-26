@@ -72,9 +72,15 @@ npm run preview   # Preview the production build locally
 
 ```text
 src/
-├── App.jsx       # Router, auth provider, pages, and shared UI
-├── App.css       # Application and responsive styles
-├── index.css     # Global styles and typography
+├── api/          # API client and authentication requests
+├── components/   # Reusable visual components
+├── context/      # Auth and theme providers
+├── hooks/        # Shared context hooks
+├── layouts/      # Auth and authenticated page shells
+├── pages/        # Route-level page components
+├── routes/       # Route definitions and guards
+├── App.jsx       # Provider and router composition only
+├── index.css     # Tailwind theme and global styles
 └── main.jsx      # React entry point
 public/
 └── restora.png   # Brand logo
