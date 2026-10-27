@@ -6,9 +6,12 @@ import Reservation from "../models/reservation.model.js";
 
 // ── Create Table (admin) ──────────────────────────────────────────────────────
 export const createTable = asyncHandler(async (req, res) => {
-  // TODO: Add a new table (tableNumber, capacity, location)
-
   const { tableNumber, capacity, location } = req.body;
+
+  const existingTable = await Table.findOne({ tableNumber });
+  if (existingTable) {
+    throw new ApiError(409, `Table ${tableNumber} already exists.`);
+  }
 
   const table = await Table.create({
     tableNumber,
@@ -23,9 +26,6 @@ export const createTable = asyncHandler(async (req, res) => {
 
 // ── Get All Tables ────────────────────────────────────────────────────────────
 export const getAllTables = asyncHandler(async (req, res) => {
-  // TODO: Return all tables, optionally filtered by status
-  // Query params: ?status=available
-
   const { status } = req.query;
 
   const filter = {};
@@ -34,7 +34,7 @@ export const getAllTables = asyncHandler(async (req, res) => {
     filter.status = status;
   }
 
-  const tables = await Table.find(filter);
+  const tables = await Table.find(filter).sort({ tableNumber: 1 });
 
   return res
     .status(200)

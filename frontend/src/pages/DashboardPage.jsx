@@ -1,15 +1,53 @@
+import { useState } from 'react'
+import { AdminDashboard } from '../components/AdminDashboard'
+import { CustomerDashboard } from '../components/CustomerDashboard'
 import { useAuth } from '../hooks/useAuth'
 
 export function DashboardPage() {
   const { user } = useAuth()
-  const name = user?.name?.split(' ')[0] || 'there'
-  return <main className="mx-auto max-w-5xl px-5 py-20 sm:px-10">
-    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-amber-600 dark:text-amber-400">Your Restora space</p>
-    <h1 className="mt-5 text-5xl font-medium tracking-[-0.07em] sm:text-6xl">Good morning, <span className="font-serif italic text-amber-600 dark:text-amber-400">{name}.</span></h1>
-    <p className="mt-5 text-sm text-stone-500 dark:text-stone-400">Everything you need for a beautifully run service, all in one calm place.</p>
-    <div className="mt-14 grid gap-5 md:grid-cols-[1.3fr_0.7fr]">
-      <div className="min-h-64 rounded-2xl bg-[#eee0c8] p-8 dark:bg-[#3b2c1d]"><span className="text-2xl text-amber-600">✦</span><p className="mt-8 text-xs text-stone-500 dark:text-stone-400">Coming soon</p><h2 className="mt-2 font-serif text-3xl">Your service overview</h2><span className="mt-3 block text-xs text-stone-500 dark:text-stone-400">We’re preparing your dashboard.</span></div>
-      <div className="min-h-64 rounded-2xl border border-stone-200 bg-white p-8 dark:border-stone-700 dark:bg-stone-900/60"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-600">Your profile</p><h2 className="mt-5 font-serif text-3xl">{user?.name || 'Restora guest'}</h2><p className="mt-2 text-sm text-stone-500 dark:text-stone-400">{user?.email}</p><span className="mt-6 inline-block rounded-full bg-amber-100 px-3 py-1.5 text-[10px] uppercase text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">{user?.role || 'customer'}</span></div>
-    </div>
-  </main>
+  const isAdmin = user?.role === 'admin'
+  const [viewMode, setViewMode] = useState(isAdmin ? 'admin' : 'customer')
+
+  return (
+    <main className="min-h-[calc(100vh-5rem)]">
+      {isAdmin && (
+        <div className="border-b border-stone-200 bg-amber-500/5 px-5 py-2.5 dark:border-stone-800 sm:px-10">
+          <div className="mx-auto flex max-w-6xl items-center justify-between text-xs">
+            <span className="text-stone-600 dark:text-stone-400">
+              Logged in as <strong className="text-amber-600 dark:text-amber-400">Administrator</strong>
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-stone-500">View as:</span>
+              <button
+                onClick={() => setViewMode('admin')}
+                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                  viewMode === 'admin'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'bg-white text-stone-600 hover:bg-stone-100 dark:bg-stone-800 dark:text-stone-300'
+                }`}
+              >
+                Admin (Table Management)
+              </button>
+              <button
+                onClick={() => setViewMode('customer')}
+                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                  viewMode === 'customer'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'bg-white text-stone-600 hover:bg-stone-100 dark:bg-stone-800 dark:text-stone-300'
+                }`}
+              >
+                Customer (Reservations)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'admin' ? (
+        <AdminDashboard user={user} />
+      ) : (
+        <CustomerDashboard user={user} />
+      )}
+    </main>
+  )
 }

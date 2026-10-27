@@ -40,14 +40,18 @@ export const createReservation = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Table is already reserved");
   }
 
-  const handledByUser = await User.findById(req.body.handledBy || req.user._id);
-
-  if (!handledByUser) {
-    throw new ApiError(404, "User not found");
-  }
-
-  if (!["staff", "admin"].includes(handledByUser.role)) {
-    throw new ApiError(403, "Only staff members can handle reservations");
+  let handledById = null;
+  if (req.body.handledBy) {
+    const handledByUser = await User.findById(req.body.handledBy);
+    if (!handledByUser) {
+      throw new ApiError(404, "User not found");
+    }
+    if (!["staff", "admin"].includes(handledByUser.role)) {
+      throw new ApiError(403, "Only staff members can handle reservations");
+    }
+    handledById = handledByUser._id;
+  } else if (["staff", "admin"].includes(req.user.role)) {
+    handledById = req.user._id;
   }
 
   table.status = "reserved";
@@ -56,12 +60,12 @@ export const createReservation = asyncHandler(async (req, res) => {
   const reservation = await Reservation.create({
     customerName,
     customerPhone,
-    customerEmail,
+    customerEmail: customerEmail || req.user.email,
     table: tableId,
     date,
     partySize,
     notes,
-    handledBy: handledByUser._id,
+    handledBy: handledById,
   });
 
   return res
@@ -71,10 +75,6 @@ export const createReservation = asyncHandler(async (req, res) => {
 
 // ── Get All Reservations ──────────────────────────────────────────────────────
 export const getAllReservations = asyncHandler(async (req, res) => {
-  // TODO: Return reservations, filter by date or status
-  // Query params: ?date=2024-12-25&status=confirmed
-  // Populate: table, handledBy
-
   const { date, status } = req.query;
 
   const filter = {};
@@ -93,7 +93,18 @@ export const getAllReservations = asyncHandler(async (req, res) => {
     filter.status = status;
   }
 
-  const reservations = await Reservation.find(filter).populate("table", "tableNumber capacity location status").populate("handledBy", "name role");
+  // If customer is requesting, only return their reservations
+  if (req.user?.role === "customer") {
+    filter.$or = [
+      { customerEmail: req.user.email },
+      { customerName: req.user.name },
+    ];
+  }
+
+  const reservations = await Reservation.find(filter)
+    .populate("table", "tableNumber capacity location status")
+    .populate("handledBy", "name role")
+    .sort({ date: 1, createdAt: -1 });
 
   return res
     .status(200)
