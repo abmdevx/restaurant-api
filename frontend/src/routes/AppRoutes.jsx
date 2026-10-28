@@ -7,11 +7,18 @@ import { RegisterPage } from '../pages/RegisterPage'
 import { ProtectedRoute } from './ProtectedRoute'
 
 export function AppRoutes() {
-  return <Routes>
-    <Route path="/" element={<HomePage />} />
-    <Route path="/login" element={<LoginPage />} />
-    <Route path="/register" element={<RegisterPage />} />
-    <Route element={<ProtectedRoute />}><Route element={<DashboardLayout />}><Route path="/dashboard" element={<DashboardPage />} /></Route></Route>
-    <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes>
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/inventory" element={<DashboardPage defaultAdminTab="inventory" />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
 }

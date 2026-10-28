@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { Logo } from '../components/Logo'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { useAuth } from '../hooks/useAuth'
@@ -8,21 +8,58 @@ export function DashboardLayout() {
   const navigate = useNavigate()
   const name = user?.name?.split(' ')[0] || 'there'
   const role = user?.role || 'customer'
+  const isAdmin = role === 'admin'
   const logout = async () => { await signOut(); navigate('/', { replace: true }) }
 
   return (
     <div className="min-h-screen bg-[#fcfaf6] text-stone-900 dark:bg-[#141210] dark:text-stone-100">
       <header className="flex h-20 items-center justify-between border-b border-stone-200 bg-white px-5 dark:border-stone-800 dark:bg-stone-900/60 sm:px-10">
-        <Logo />
+        <div className="flex items-center gap-6 sm:gap-8">
+          <Logo />
+
+          {isAdmin && (
+            <nav className="hidden sm:flex items-center gap-1.5">
+              <NavLink
+                to="/dashboard"
+                end
+                className={({ isActive }) =>
+                  `rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                    isActive
+                      ? 'bg-amber-500/10 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                      : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100'
+                  }`
+                }
+              >
+                🍽️ Tables
+              </NavLink>
+
+              <NavLink
+                to="/inventory"
+                className={({ isActive }) =>
+                  `rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                    isActive
+                      ? 'bg-amber-500/10 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                      : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100'
+                  }`
+                }
+              >
+                📦 Inventory
+              </NavLink>
+            </nav>
+          )}
+        </div>
+
         <div className="flex items-center gap-4 sm:gap-5">
           <ThemeToggle />
           <div className="hidden items-center gap-2 sm:flex">
             <span className="text-sm text-stone-600 dark:text-stone-400">Hi, {name}</span>
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-              role === 'admin'
-                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
-            }`}>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                role === 'admin'
+                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                  : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
+              }`}
+            >
               {role}
             </span>
           </div>

@@ -26,9 +26,20 @@ export const addInventoryItem = asyncHandler(async (req, res) => {
     category,
     quantity,
     unit,
-    lowStockThreshold,
+    lowStockThreshold: lowStockThreshold ?? 10,
     costPerUnit,
     supplier,
+    history:
+      quantity > 0
+        ? [
+            {
+              type: "restock",
+              quantity,
+              reason: "Initial Stock",
+              createdAt: new Date(),
+            },
+          ]
+        : [],
   });
 
   return res.status(201).json(
@@ -42,7 +53,7 @@ export const getAllInventory = asyncHandler(async (req, res) => {
 
   const filter = {};
 
-  if (category) {
+  if (category && category !== "all") {
     filter.category = category;
   }
 
@@ -52,7 +63,7 @@ export const getAllInventory = asyncHandler(async (req, res) => {
     };
   }
 
-  const inventoryItems = await InventoryItem.find(filter);
+  const inventoryItems = await InventoryItem.find(filter).sort({ name: 1 });
 
   return res.status(200).json(
     new ApiResponse(200, inventoryItems, "Inventory fetched successfully")
@@ -76,25 +87,28 @@ export const getInventoryItemById = asyncHandler(async (req, res) => {
 export const updateInventoryItem = asyncHandler(async (req, res) => {
   const { name, category, unit, supplier, costPerUnit, lowStockThreshold } = req.body;
 
-  const existingItem = await InventoryItem.findOne({
-    name,
-    _id: { $ne: req.params.id },
-  });
+  if (name) {
+    const existingItem = await InventoryItem.findOne({
+      name,
+      _id: { $ne: req.params.id },
+    });
 
-  if (existingItem) {
-    throw new ApiError(400, "Inventory item with this name already exists");
+    if (existingItem) {
+      throw new ApiError(400, "Inventory item with this name already exists");
+    }
   }
-  
+
+  const updateData = {};
+  if (name !== undefined) updateData.name = name;
+  if (category !== undefined) updateData.category = category;
+  if (unit !== undefined) updateData.unit = unit;
+  if (supplier !== undefined) updateData.supplier = supplier;
+  if (costPerUnit !== undefined) updateData.costPerUnit = costPerUnit;
+  if (lowStockThreshold !== undefined) updateData.lowStockThreshold = lowStockThreshold;
+
   const inventoryItem = await InventoryItem.findByIdAndUpdate(
     req.params.id,
-    {
-      name,
-      category,
-      unit,
-      supplier,
-      costPerUnit,
-      lowStockThreshold,
-    },
+    updateData,
     {
       new: true,
       runValidators: true,
