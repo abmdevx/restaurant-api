@@ -567,7 +567,7 @@ export function InventoryDashboard({ user }) {
                       {item.supplier && (
                         <div className="flex items-center justify-between">
                           <span>Supplier:</span>
-                          <span className="truncate max-w-[150px] font-medium text-stone-800 dark:text-stone-300" title={item.supplier}>
+                          <span className="truncate max-w-37.5 font-medium text-stone-800 dark:text-stone-300" title={item.supplier}>
                             {item.supplier}
                           </span>
                         </div>

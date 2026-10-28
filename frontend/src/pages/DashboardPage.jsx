@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { AdminDashboard } from '../components/AdminDashboard'
 import { CustomerDashboard } from '../components/CustomerDashboard'
 import { InventoryDashboard } from '../components/InventoryDashboard'
+import { OrderDashboard } from '../components/OrderDashboard'
 import { useAuth } from '../hooks/useAuth'
 
 export function DashboardPage({ defaultAdminTab = 'tables' }) {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
   const [viewMode, setViewMode] = useState(isAdmin ? 'admin' : 'customer')
-  const [adminTab, setAdminTab] = useState(defaultAdminTab) // 'tables' | 'inventory'
+  const [adminTab, setAdminTab] = useState(defaultAdminTab) // 'tables' | 'inventory' | 'orders'
 
   useEffect(() => {
     if (defaultAdminTab) {
@@ -37,6 +38,19 @@ export function DashboardPage({ defaultAdminTab = 'tables' }) {
                   }`}
                 >
                   🍽️ Floor Tables
+                </button>
+                <button
+                  onClick={() => {
+                    setViewMode('admin')
+                    setAdminTab('orders')
+                  }}
+                  className={`rounded-lg px-3 py-1 font-semibold transition ${
+                    viewMode === 'admin' && adminTab === 'orders'
+                      ? 'bg-amber-500 text-white shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100'
+                  }`}
+                >
+                  📝 Kitchen & Orders
                 </button>
                 <button
                   onClick={() => {
@@ -70,6 +84,8 @@ export function DashboardPage({ defaultAdminTab = 'tables' }) {
 
       {viewMode === 'customer' ? (
         <CustomerDashboard user={user} />
+      ) : adminTab === 'orders' ? (
+        <OrderDashboard user={user} />
       ) : adminTab === 'inventory' ? (
         <InventoryDashboard user={user} />
       ) : (

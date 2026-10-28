@@ -41,10 +41,10 @@ export const placeOrder = asyncHandler(async (req, res) => {
       throw new ApiError(404, "Table not found");
     }
 
-    if (!["reserved", "occupied"].includes(table.status)) {
+    if (!["available", "reserved", "occupied"].includes(table.status)) {
       throw new ApiError(
         400,
-        "Table must be reserved or occupied before placing an order."
+        "Table is not available for placing orders."
       );
     }
 
@@ -78,8 +78,9 @@ export const placeOrder = asyncHandler(async (req, res) => {
       }
 
       // Check inventory
-      for (const ingredient of menu.ingredients) {
+      for (const ingredient of menu.ingredients || []) {
         const inventory = ingredient.inventoryItem;
+        if (!inventory) continue;
 
         const requiredQty =
           ingredient.quantity * item.quantity;
@@ -93,8 +94,9 @@ export const placeOrder = asyncHandler(async (req, res) => {
       }
 
       // Deduct inventory
-      for (const ingredient of menu.ingredients) {
+      for (const ingredient of menu.ingredients || []) {
         const inventory = ingredient.inventoryItem;
+        if (!inventory) continue;
 
         const requiredQty =
           ingredient.quantity * item.quantity;
@@ -187,7 +189,11 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     filter.createdAt = { $gte: start, $lt: end };
   }
 
-  const orders = await Order.find(filter).populate("table", "tableNumber capacity location status").populate("items.menuItem", "name price");
+  const orders = await Order.find(filter)
+    .populate("table", "tableNumber capacity location status")
+    .populate("items.menuItem", "name price category")
+    .populate("servedBy", "name email")
+    .sort({ createdAt: -1 });
 
   return res
     .status(200)
@@ -287,8 +293,9 @@ export const addItemsToOrder = asyncHandler(async (req, res) => {
       }
 
       // Check inventory
-      for (const ingredient of menuItem.ingredients) {
+      for (const ingredient of menuItem.ingredients || []) {
         const inventory = ingredient.inventoryItem;
+        if (!inventory) continue;
 
         const requiredQty = ingredient.quantity * item.quantity;
 
@@ -301,8 +308,9 @@ export const addItemsToOrder = asyncHandler(async (req, res) => {
       }
 
       // Deduct inventory
-      for (const ingredient of menuItem.ingredients) {
+      for (const ingredient of menuItem.ingredients || []) {
         const inventory = ingredient.inventoryItem;
+        if (!inventory) continue;
 
         const requiredQty = ingredient.quantity * item.quantity;
 
@@ -450,9 +458,11 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     // Restore inventory
     for (const item of order.items) {
       const menuItem = item.menuItem;
+      if (!menuItem?.ingredients?.length) continue;
 
       for (const ingredient of menuItem.ingredients) {
         const inventory = ingredient.inventoryItem;
+        if (!inventory) continue;
 
         const restoreQty = ingredient.quantity * item.quantity;
 
