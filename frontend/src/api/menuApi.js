@@ -36,3 +36,9 @@ export function toggleMenuItemAvailability(id) {
   })
 }
 
+export function deleteMenuItem(id) {
+  return apiRequest(`/menu/delete/${id}`, {
+    method: 'DELETE',
+  })
+}
+

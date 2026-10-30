@@ -57,7 +57,7 @@ export const getAllMenuItems = asyncHandler(async (req, res) => {
     filter.isAvailable = true;
   }
 
-  const menuItems = await MenuItem.find(filter);
+  const menuItems = await MenuItem.find(filter).sort({ category: 1, name: 1 });
 
   return res
     .status(200)
@@ -85,9 +85,18 @@ export const updateMenuItem = asyncHandler(async (req, res) => {
 
   const { name, description, category, price, isAvailable, ingredients } = req.body;
 
+  // Build update object — only include defined fields
+  const updateData = {};
+  if (name !== undefined) updateData.name = name;
+  if (description !== undefined) updateData.description = description;
+  if (category !== undefined) updateData.category = category;
+  if (price !== undefined) updateData.price = price;
+  if (isAvailable !== undefined) updateData.isAvailable = isAvailable;
+  if (ingredients !== undefined) updateData.ingredients = ingredients;
+
   const menuItem = await MenuItem.findByIdAndUpdate(
     req.params.id,
-    { name, description, category, price, isAvailable, ingredients },
+    updateData,
     { new: true, runValidators: true }
   );
 

@@ -15,7 +15,9 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/orders" element={<DashboardPage defaultAdminTab="orders" />} />
           <Route path="/inventory" element={<DashboardPage defaultAdminTab="inventory" />} />
+          <Route path="/menu" element={<DashboardPage defaultAdminTab="menu" />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

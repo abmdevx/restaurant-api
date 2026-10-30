@@ -47,6 +47,19 @@ export function DashboardLayout() {
               </NavLink>
 
               <NavLink
+                to="/menu"
+                className={({ isActive }) =>
+                  `rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                    isActive
+                      ? 'bg-amber-500/10 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                      : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100'
+                  }`
+                }
+              >
+                🍴 Menu
+              </NavLink>
+
+              <NavLink
                 to="/inventory"
                 className={({ isActive }) =>
                   `rounded-xl px-3 py-1.5 text-xs font-semibold transition ${

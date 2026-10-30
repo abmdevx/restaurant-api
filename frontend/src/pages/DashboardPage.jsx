@@ -2,14 +2,23 @@ import { useEffect, useState } from 'react'
 import { AdminDashboard } from '../components/AdminDashboard'
 import { CustomerDashboard } from '../components/CustomerDashboard'
 import { InventoryDashboard } from '../components/InventoryDashboard'
+import { MenuDashboard } from '../components/MenuDashboard'
 import { OrderDashboard } from '../components/OrderDashboard'
 import { useAuth } from '../hooks/useAuth'
+
+// Admin tabs config
+const ADMIN_TABS = [
+  { id: 'tables', label: '🍽️ Floor Tables' },
+  { id: 'orders', label: '📝 Kitchen & Orders' },
+  { id: 'menu', label: '🍴 Menu' },
+  { id: 'inventory', label: '📦 Inventory & Stock' },
+]
 
 export function DashboardPage({ defaultAdminTab = 'tables' }) {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
   const [viewMode, setViewMode] = useState(isAdmin ? 'admin' : 'customer')
-  const [adminTab, setAdminTab] = useState(defaultAdminTab) // 'tables' | 'inventory' | 'orders'
+  const [adminTab, setAdminTab] = useState(defaultAdminTab) // 'tables' | 'orders' | 'menu' | 'inventory'
 
   useEffect(() => {
     if (defaultAdminTab) {
@@ -21,50 +30,29 @@ export function DashboardPage({ defaultAdminTab = 'tables' }) {
     <main className="min-h-[calc(100vh-5rem)]">
       {isAdmin && (
         <div className="border-b border-stone-200 bg-amber-500/5 px-5 py-2.5 dark:border-stone-800 sm:px-10">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between text-xs">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2.5 text-xs sm:flex-row sm:items-center sm:justify-between">
             {/* Admin Modules Switcher */}
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-stone-500 dark:text-stone-400">Admin Module:</span>
+              <span className="font-semibold text-stone-500 dark:text-stone-400">
+                Admin Module:
+              </span>
               <div className="flex items-center gap-1 rounded-xl border border-stone-200 bg-white p-1 dark:border-stone-800 dark:bg-stone-900">
-                <button
-                  onClick={() => {
-                    setViewMode('admin')
-                    setAdminTab('tables')
-                  }}
-                  className={`rounded-lg px-3 py-1 font-semibold transition ${
-                    viewMode === 'admin' && adminTab === 'tables'
-                      ? 'bg-amber-500 text-white shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100'
-                  }`}
-                >
-                  🍽️ Floor Tables
-                </button>
-                <button
-                  onClick={() => {
-                    setViewMode('admin')
-                    setAdminTab('orders')
-                  }}
-                  className={`rounded-lg px-3 py-1 font-semibold transition ${
-                    viewMode === 'admin' && adminTab === 'orders'
-                      ? 'bg-amber-500 text-white shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100'
-                  }`}
-                >
-                  📝 Kitchen & Orders
-                </button>
-                <button
-                  onClick={() => {
-                    setViewMode('admin')
-                    setAdminTab('inventory')
-                  }}
-                  className={`rounded-lg px-3 py-1 font-semibold transition ${
-                    viewMode === 'admin' && adminTab === 'inventory'
-                      ? 'bg-amber-500 text-white shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100'
-                  }`}
-                >
-                  📦 Inventory & Stock
-                </button>
+                {ADMIN_TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setViewMode('admin')
+                      setAdminTab(tab.id)
+                    }}
+                    className={`rounded-lg px-3 py-1 font-semibold transition ${
+                      viewMode === 'admin' && adminTab === tab.id
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -86,6 +74,8 @@ export function DashboardPage({ defaultAdminTab = 'tables' }) {
         <CustomerDashboard user={user} />
       ) : adminTab === 'orders' ? (
         <OrderDashboard user={user} />
+      ) : adminTab === 'menu' ? (
+        <MenuDashboard user={user} />
       ) : adminTab === 'inventory' ? (
         <InventoryDashboard user={user} />
       ) : (
