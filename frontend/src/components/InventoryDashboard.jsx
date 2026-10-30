@@ -3,7 +3,7 @@ import {
   addInventoryItem,
   deductInventory,
   deleteInventoryItem,
-  getAllInventory,
+  getAllInventoryItems,
   restockInventory,
   updateInventoryItem,
 } from '../api/inventoryApi'
@@ -57,7 +57,7 @@ export function InventoryDashboard({ user }) {
   const loadInventory = async () => {
     try {
       setLoading(true)
-      const res = await getAllInventory()
+      const res = await getAllInventoryItems()
       setItems(res.data || [])
     } catch (err) {
       toast.error(err.message || 'Failed to load inventory items')

@@ -1,6 +1,6 @@
 import { apiRequest } from './client'
 
-export function getAllInventory(params = {}) {
+export function getAllInventoryItems(params = {}) {
   const searchParams = new URLSearchParams()
   if (params.category && params.category !== 'all') {
     searchParams.append('category', params.category)
